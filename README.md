@@ -1,2 +1,2 @@
 # cloud-image-filter
-A simple image filtering service ready to be deployed to AWS
+A simple image filtering microservice ready to be deployed to AWS
