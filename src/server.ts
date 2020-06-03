@@ -1,6 +1,7 @@
-import express from "express";
+import express, { response } from "express";
 import bodyParser from "body-parser";
 import { filterImageFromURL, deleteLocalFiles } from "./util/util";
+import axios from "axios";
 
 (async () => {
   // Init the Express application
@@ -32,15 +33,25 @@ import { filterImageFromURL, deleteLocalFiles } from "./util/util";
     const imageUrl = req.query.image_url;
     if (!imageUrl || imageUrl.length == 0) {
       res
-        .status(400)
+        .status(422)
         .send("Please provide a valid value for the image_url query");
     }
-
-    // send the response
-    const filteredImagePath = await filterImageFromURL(imageUrl);
-    res.status(200).sendFile(filteredImagePath, (err) => {
-      deleteLocalFiles([filteredImagePath]);
-    });
+    // check that the url is reachable
+    axios
+      .get(imageUrl)
+      .then(async () => {
+        const filteredImagePath = await filterImageFromURL(imageUrl);
+        res.status(200).sendFile(filteredImagePath, (err) => {
+          deleteLocalFiles([filteredImagePath]);
+        });
+      })
+      .catch(() => {
+        res
+          .status(422)
+          .send(
+            "Failed to GET the required image_url, make sure the provided url is valid"
+          );
+      });
   });
 
   //! END @TODO1
